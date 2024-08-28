@@ -80,8 +80,8 @@
     </div>
 
     <script>
-        const LicensePublicKey = "FITAOISy";  // 必须8码 (注册公钥)
-        const LicensePrivateKey = "53673862"; // 必须8码 (注册私钥)
+        const LicensePublicKey = "FITAOISy";
+        const LicensePrivateKey = "53673862";
 
         function generateLicenseKey() {
             const machineCode = document.getElementById('machineCode').value;
@@ -90,7 +90,9 @@
                 return;
             }
             const licenseKey = encryptDES(machineCode);
-            document.getElementById('licenseKey').innerText = licenseKey;
+            document.getElementById('machineCode').value = licenseKey;
+            document.querySelector('button').innerText = '复制注册码';
+            document.querySelector('button').onclick = copyLicenseKey;
         }
 
         function encryptDES(message) {
@@ -107,6 +109,29 @@
                 console.error("Encryption failed:", e);
                 return message;
             }
+        }
+
+        function copyLicenseKey() {
+            const licenseKeyElement = document.getElementById('machineCode');
+            const originalLicenseKey = licenseKeyElement.value;
+            copyToClipboard(originalLicenseKey);
+            document.querySelector('button').innerText = '已复制成功';
+            setTimeout(initPage, 3000);
+        }
+
+        function copyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
+
+        function initPage() {
+            document.getElementById('machineCode').value = '';
+            document.querySelector('button').innerText = '生成注册码';
+            document.querySelector('button').onclick = generateLicenseKey;
         }
     </script>
 </body>

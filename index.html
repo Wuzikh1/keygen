@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,11 +27,11 @@
             width: 100%;
             height: 100%;
             background: url("https://ice.frostsky.com/2024/08/28/73229bca76642355e49e27f29032e4ec.webp") repeat;
-            opacity: 0.3; /* Adjusts the transparency */
+            opacity: 0.3;
             z-index: -1;
         }
 
-        .container {
+       .container {
             text-align: center;
             padding: 20px;
             background-color: #fff;
@@ -48,6 +49,12 @@
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:hover {
+            border-color: #5A9;
+            box-shadow: 0 0 8px rgba(90, 153, 137, 0.6);
         }
 
         button {
@@ -57,6 +64,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
@@ -66,17 +74,16 @@
         #licenseKey {
             font-weight: bold;
             color: #d9534f;
+            cursor: pointer;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h2>请输入机器码：</h2>
-        <input type="text" id="machineCode" placeholder="请输入机器码..." />
+        <h2>License Key Generator</h2>
+        <input type="text" id="machineCode" placeholder="请输入机器码..." style="outline: none;" />
         <button onclick="generateLicenseKey()">生成注册码</button>
-
-        <h2>注册码为：</h2>
-        <p id="licenseKey"></p>
     </div>
 
     <script>
@@ -135,4 +142,5 @@
         }
     </script>
 </body>
+
 </html>

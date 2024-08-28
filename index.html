@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>License Key Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+</head>
+<body>
+    <h2>请输入机器码：</h2>
+    <input type="text" id="machineCode" />
+    <button onclick="generateLicenseKey()">生成注册码</button>
+
+    <h2>注册码为：</h2>
+    <p id="licenseKey"></p>
+
+    <script>
+        const LincensePublicKey = "FITAOISy"; // 必须8码(注册公钥)
+        const LincensePrivateKey = "53673862"; // 必须8码(注册私钥)
+
+        function generateLicenseKey() {
+            const machineCode = document.getElementById('machineCode').value;
+            const licenseKey = encryptDES(machineCode);
+            document.getElementById('licenseKey').innerText = licenseKey;
+        }
+
+        function encryptDES(message) {
+            try {
+                const keyHex = CryptoJS.enc.Utf8.parse(LincensePublicKey);
+                const ivHex = CryptoJS.enc.Utf8.parse(LincensePrivateKey);
+                const encrypted = CryptoJS.DES.encrypt(CryptoJS.enc.Utf8.parse(message), keyHex, {
+                    iv: ivHex,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+                return encrypted.ciphertext.toString(CryptoJS.enc.Hex).toUpperCase();
+            } catch (e) {
+                return message;
+            }
+        }
+    </script>
+</body>
+</html>

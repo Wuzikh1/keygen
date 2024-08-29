@@ -10,13 +10,12 @@
         :root {
             --bg-color: #ffffff;
             --text-color: #333333;
-            --input-bg: #f5f5f5;
-            --input-border: #e0e0e0;
-            --input-focus: #5A9;
+            --input-bg: #ffffff;
             --button-bg: #5A9;
             --button-hover: #488;
             --copy-button-bg: #4a90e2;
             --copy-button-hover: #357abd;
+            --placeholder-color: #999999;
         }
 
         body {
@@ -73,53 +72,46 @@
         }
 
         input[type="text"] {
-            width: 100%;
             padding: 12px 15px;
-            border: 2px solid var(--input-border);
+            border: 1px solid #ccc;
             border-radius: 6px;
+            transition: all 0.3s ease;
+            height: 45px;
+            box-sizing: border-box;
+            font-size: 16px;
+            width: 100%;
+            outline: none;
             background-color: var(--input-bg);
             color: var(--text-color);
-            font-size: 16px;
-            transition: all 0.3s ease;
-            outline: none;
-            box-sizing: border-box;
         }
 
-        input[type="text"]:focus {
-            border-color: var(--input-focus);
+        input[type="text"]::placeholder {
+            color: var(--placeholder-color);
+            opacity: 1; /* Ensure placeholder is visible */
+        }
+
+        input[type="text"]:focus::placeholder {
+            opacity: 0; /* Hide placeholder when focused */
+        }
+
+        input[type="text"]:hover, input[type="text"]:focus {
+            border-color: var(--button-bg);
             box-shadow: 0 0 10px rgba(90, 153, 137, 0.3);
-        }
-
-        label {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-            font-size: 16px;
-            pointer-events: none;
-            transition: all 0.3s ease;
-        }
-
-        input[type="text"]:focus + label,
-        input[type="text"]:not(:placeholder-shown) + label {
-            top: 0;
-            font-size: 12px;
-            color: var(--input-focus);
-            background-color: var(--bg-color);
-            padding: 0 5px;
         }
 
         button {
             padding: 12px 15px;
-            border: none;
+            border: 1px solid #ccc;
             border-radius: 6px;
             background-color: var(--button-bg);
             color: white;
-            font-size: 16px;
-            font-weight: bold;
+            border: none;
             cursor: pointer;
+            white-space: nowrap;
+            font-weight: bold;
             transition: all 0.3s ease;
+            height: 45px;
+            box-sizing: border-box;
         }
 
         button:hover {
@@ -149,6 +141,7 @@
 
             input[type="text"], button {
                 font-size: 14px;
+                height: 40px;
             }
         }
     </style>
@@ -159,8 +152,7 @@
         <h2>License Key Generator</h2>
         <div class="input-button-wrapper">
             <div class="input-container">
-                <input type="text" id="machineCode" placeholder=" " />
-                <label for="machineCode" id="inputLabel">请输入机器码...</label>
+                <input type="text" id="machineCode" placeholder="请输入机器码..." />
             </div>
             <button id="generateButton" onclick="generateLicenseKey()">生成注册码</button>
             <button id="copyButton" onclick="copyLicenseKey()">复制注册码</button>
@@ -181,7 +173,6 @@
             document.getElementById('machineCode').value = licenseKey;
             document.getElementById('generateButton').style.display = 'none';
             document.getElementById('copyButton').style.display = 'block';
-            document.getElementById('inputLabel').textContent = '生成完毕';
         }
 
         function encryptData(data) {
@@ -219,7 +210,6 @@
             document.getElementById('machineCode').value = '';
             document.getElementById('generateButton').style.display = 'block';
             document.getElementById('copyButton').style.display = 'none';
-            document.getElementById('inputLabel').textContent = '请输入机器码...';
         }
     </script>
 </body>

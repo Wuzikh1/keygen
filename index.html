@@ -47,7 +47,7 @@
 
         .input-container {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 15px;  /* 减小了底部间距 */
         }
 
         input[type="text"] {
@@ -66,19 +66,55 @@
             outline: none;
         }
 
-        .checkmark {
+        .float-label {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #718096;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus + .float-label,
+        input[type="text"]:not(:placeholder-shown) + .float-label {
+            top: 0;
+            font-size: 12px;
+            color: #4299e1;
+            background-color: white;
+            padding: 0 4px;
+        }
+
+        .checkmark, .error-mark {
             position: absolute;
             right: 10px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 16px;
-            color: #38a169;
             display: none;
         }
 
+        .checkmark {
+            color: #38a169;
+        }
+
+        .error-mark {
+            color: #e53e3e;
+        }
+
         .license-key-container {
-            margin-bottom: 20px;
-            display: none;
+            margin-bottom: 15px;  /* 减小了底部间距 */
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin-bottom 0.3s ease-out;
+        }
+
+        .license-key-container.show {
+            max-height: 200px;
+            opacity: 1;
+            margin-bottom: 15px;  /* 保持一致的间距 */
         }
 
         .license-key {
@@ -88,6 +124,12 @@
             font-family: monospace;
             font-size: 16px;
             word-break: break-all;
+            transform: translateY(0);
+            transition: transform 0.3s ease-out;
+        }
+
+        .license-key.hide {
+            transform: translateY(100%);
         }
 
         button {
@@ -99,7 +141,7 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.2s ease-in-out;
+            transition: background-color 0.2s ease-in-out, transform 0.3s ease-out;
         }
 
         button:hover {
@@ -108,6 +150,10 @@
 
         button.copied {
             background-color: #38a169;
+        }
+
+        button.reset {
+            transform: scale(0.95);
         }
 
         .loader {
@@ -122,12 +168,8 @@
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -135,8 +177,10 @@
     <div class="container">
         <h2>License Key Generator</h2>
         <div class="input-container">
-            <input type="text" id="machineCode" placeholder="输入机器码" oninput="toggleCheckmark()">
+            <input type="text" id="machineCode" placeholder=" " oninput="handleInput()">
+            <label for="machineCode" class="float-label">输入机器码</label>
             <span class="checkmark" id="checkmark">✓</span>
+            <span class="error-mark" id="errorMark">✗</span>
         </div>
         <div id="licenseKeyContainer" class="license-key-container">
             <p class="license-key" id="licenseKey"></p>
@@ -149,19 +193,64 @@
         const secretIv = atob("NTM2NzM4NjI=");
 
         let isGenerating = false;
+        let hasGeneratedKey = false;
+        let lastGeneratedMachineCode = '';
+
+        function handleInput() {
+            const machineCode = document.getElementById('machineCode').value.trim();
+            const checkmark = document.getElementById('checkmark');
+            const errorMark = document.getElementById('errorMark');
+            
+            if (machineCode.length >= 4) {
+                checkmark.style.display = 'inline';
+                errorMark.style.display = 'none';
+            } else if (machineCode.length > 0) {
+                checkmark.style.display = 'none';
+                errorMark.style.display = 'inline';
+            } else {
+                checkmark.style.display = 'none';
+                errorMark.style.display = 'none';
+            }
+
+            if (machineCode !== lastGeneratedMachineCode) {
+                resetInterfaceWithAnimation();
+            }
+        }
+
+        function resetInterfaceWithAnimation() {
+            if (hasGeneratedKey) {
+                const licenseKeyContainer = document.getElementById('licenseKeyContainer');
+                const licenseKey = document.getElementById('licenseKey');
+                const generateButton = document.getElementById('generateButton');
+
+                licenseKey.classList.add('hide');
+                generateButton.classList.add('reset');
+
+                setTimeout(() => {
+                    licenseKeyContainer.classList.remove('show');
+                    setTimeout(() => {
+                        hasGeneratedKey = false;
+                        generateButton.textContent = '生成注册码';
+                        generateButton.classList.remove('copied');
+                        generateButton.classList.remove('reset');
+                        licenseKey.classList.remove('hide');
+                    }, 300);
+                }, 300);
+            }
+        }
 
         function handleButtonClick() {
-            if (isGenerating) {
-                copyLicenseKey();
-            } else {
+            if (!hasGeneratedKey) {
                 generateLicenseKey();
+            } else {
+                copyLicenseKey();
             }
         }
 
         async function generateLicenseKey() {
             const machineCode = document.getElementById('machineCode').value.trim();
-            if (!machineCode) {
-                alert("请输入机器码！");
+            if (machineCode.length < 4) {
+                alert("机器码至少需要4个字符！");
                 return;
             }
 
@@ -170,9 +259,12 @@
             setTimeout(() => {
                 const licenseKey = encryptData(machineCode);
                 document.getElementById('licenseKey').textContent = licenseKey;
-                document.getElementById('licenseKeyContainer').style.display = 'block';
+                const licenseKeyContainer = document.getElementById('licenseKeyContainer');
+                licenseKeyContainer.classList.add('show');
                 document.getElementById('generateButton').textContent = '复制注册码';
                 isGenerating = false;
+                hasGeneratedKey = true;
+                lastGeneratedMachineCode = machineCode;
             }, 1000);
         }
 
@@ -209,16 +301,6 @@
             } catch (err) {
                 console.error('复制失败:', err);
                 alert('复制失败，请手动复制。');
-            }
-        }
-
-        function toggleCheckmark() {
-            const machineCode = document.getElementById('machineCode').value.trim();
-            const checkmark = document.getElementById('checkmark');
-            if (machineCode) {
-                checkmark.style.display = 'inline';
-            } else {
-                checkmark.style.display = 'none';
             }
         }
     </script>

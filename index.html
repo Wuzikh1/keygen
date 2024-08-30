@@ -47,7 +47,7 @@
 
         .input-container {
             position: relative;
-            margin-bottom: 15px;  /* 减小了底部间距 */
+            margin-bottom: 20px;
         }
 
         input[type="text"] {
@@ -88,7 +88,7 @@
 
         .checkmark, .error-mark {
             position: absolute;
-            right: 10px;
+            right: 16px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 16px;
@@ -103,8 +103,19 @@
             color: #e53e3e;
         }
 
+        .validation-message {
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 5px;
+            text-align: left;
+            position: absolute;
+            left: 0;
+            top: 100%;
+            width: 100%;
+        }
+
         .license-key-container {
-            margin-bottom: 15px;  /* 减小了底部间距 */
+            margin-bottom: 15px;
             overflow: hidden;
             max-height: 0;
             opacity: 0;
@@ -114,7 +125,7 @@
         .license-key-container.show {
             max-height: 200px;
             opacity: 1;
-            margin-bottom: 15px;  /* 保持一致的间距 */
+            margin-bottom: 15px;
         }
 
         .license-key {
@@ -176,11 +187,12 @@
 <body>
     <div class="container">
         <h2>License Key Generator</h2>
-        <div class="input-container">
+        <div class="input-container" id="inputContainer">
             <input type="text" id="machineCode" placeholder=" " oninput="handleInput()">
             <label for="machineCode" class="float-label">输入机器码</label>
             <span class="checkmark" id="checkmark">✓</span>
             <span class="error-mark" id="errorMark">✗</span>
+            <div class="validation-message" id="validationMessage"></div>
         </div>
         <div id="licenseKeyContainer" class="license-key-container">
             <p class="license-key" id="licenseKey"></p>
@@ -200,16 +212,19 @@
             const machineCode = document.getElementById('machineCode').value.trim();
             const checkmark = document.getElementById('checkmark');
             const errorMark = document.getElementById('errorMark');
-            
+            const validationMessage = document.getElementById('validationMessage');
+            const inputContainer = document.getElementById('inputContainer');
+
             if (machineCode.length >= 4) {
                 checkmark.style.display = 'inline';
                 errorMark.style.display = 'none';
-            } else if (machineCode.length > 0) {
-                checkmark.style.display = 'none';
-                errorMark.style.display = 'inline';
+                validationMessage.textContent = '';
+                inputContainer.classList.remove('invalid');
             } else {
                 checkmark.style.display = 'none';
-                errorMark.style.display = 'none';
+                errorMark.style.display = 'inline';
+                validationMessage.textContent = `还需要输入${4 - machineCode.length}个字符`;
+                inputContainer.classList.add('invalid');
             }
 
             if (machineCode !== lastGeneratedMachineCode) {
@@ -250,7 +265,8 @@
         async function generateLicenseKey() {
             const machineCode = document.getElementById('machineCode').value.trim();
             if (machineCode.length < 4) {
-                alert("机器码至少需要4个字符！");
+                const inputContainer = document.getElementById('inputContainer');
+                inputContainer.classList.add('invalid');
                 return;
             }
 
@@ -259,13 +275,21 @@
             setTimeout(() => {
                 const licenseKey = encryptData(machineCode);
                 document.getElementById('licenseKey').textContent = licenseKey;
-                const licenseKeyContainer = document.getElementById('licenseKeyContainer');
-                licenseKeyContainer.classList.add('show');
+                document.getElementById('licenseKeyContainer').classList.add('show');
                 document.getElementById('generateButton').textContent = '复制注册码';
-                isGenerating = false;
-                hasGeneratedKey = true;
                 lastGeneratedMachineCode = machineCode;
+                hasGeneratedKey = true;
+                isGenerating = false;
             }, 1000);
+        }
+
+        function copyLicenseKey() {
+            const licenseKey = document.getElementById('licenseKey').textContent;
+            navigator.clipboard.writeText(licenseKey).then(() => {
+                const generateButton = document.getElementById('generateButton');
+                generateButton.textContent = '复制成功';
+                generateButton.classList.add('copied');
+            });
         }
 
         function encryptData(data) {
@@ -277,31 +301,6 @@
                 padding: CryptoJS.pad.Pkcs7
             });
             return encrypted.ciphertext.toString(CryptoJS.enc.Hex).toUpperCase();
-        }
-
-        async function copyLicenseKey() {
-            const licenseKeyElement = document.getElementById('licenseKey');
-            const licenseKey = licenseKeyElement.textContent;
-
-            if (!licenseKey) {
-                console.error('没有找到要复制的内容');
-                return;
-            }
-
-            try {
-                await navigator.clipboard.writeText(licenseKey);
-                console.log('Text copied to clipboard');
-                const button = document.getElementById('generateButton');
-                button.textContent = '已复制成功';
-                button.classList.add('copied');
-                setTimeout(() => {
-                    button.textContent = '复制注册码';
-                    button.classList.remove('copied');
-                }, 3000);
-            } catch (err) {
-                console.error('复制失败:', err);
-                alert('复制失败，请手动复制。');
-            }
         }
     </script>
 </body>

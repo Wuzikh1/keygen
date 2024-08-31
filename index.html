@@ -1,15 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport"
-		  content="width=device-width, initial-scale=1.0">
-	<title>License Key Generator</title>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
-	<style>
-		body {
-            font-family:  Arial, sans-serif;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>License Key Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
@@ -131,16 +129,16 @@
         }
 
         .license-key {
-            background-color: #edf2f7;
+            background-color: #dcedff;
             padding: 14px;
             border-radius: 6px;
-	    font-family: 'Courier New', monospace;
-	    font-style: italic;
+            font-family: 'Courier New', monospace;
+            font-style: italic;
             font-size: 15px;
-            word-break: break-all;	
+            word-break: break-all;    
             transform: translateY(0);
             transition: transform 0.3s ease-out;
-	    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .license-key.hide {
@@ -159,16 +157,16 @@
             transition: background-color 0.2s ease-in-out, transform 0.3s ease-out;
         }
 
-	button:hover {
-	    background-color: #3182ce;
-	    transform: translateY(-2px);
-	    box-shadow: 0 6px 8px rgba(66, 153, 225, 0.2);
-	}
+        button:hover {
+            background-color: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(66, 153, 225, 0.2);
+        }
 
-	button:active {
-  	    transform: translateY(0);
-	    box-shadow: 0 2px 4px rgba(66, 153, 225, 0.1);
-	}
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(66, 153, 225, 0.1);
+        }
 
         button.copied {
             background-color: #38a169;
@@ -193,164 +191,198 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .disclaimer {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 30px;
+            margin-bottom: 0px; /* 添加底部间距 */
+            text-align: center;
+        }
+
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0);
+            padding: 10px;
+            text-align: center;
+        }
+
+        .signature {
+            font-size: 13px;
+            color: #4a5568;
+            font-style: italic;
+        }
+		.info-text {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .info-icon {
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
-	<div class="container">
-		<h2>License Key Generator</h2>
-		<div class="input-container"
-			 id="inputContainer">
-			<input type="text"
-				   id="machineCode"
-				   placeholder=" "
-				   oninput="handleInput()">
-			<label for="machineCode"
-				   class="float-label">输入机器码</label>
-			<span class="checkmark"
-				  id="checkmark">✓</span>
-			<span class="error-mark"
-				  id="errorMark">✗</span>
-			<div class="validation-message"
-				 id="validationMessage"></div>
-		</div>
-		<div id="licenseKeyContainer"
-			 class="license-key-container">
-			<p class="license-key"
-			   id="licenseKey"></p>
-		</div>
-		<button id="generateButton"
-				onclick="handleButtonClick()">生成注册码</button>
-	</div>
+    <div class="container">
+        <h2>License Key Generator</h2>
+        <p class="info-text">
+            <span class="info-icon">ℹ️</span>
+            输入您的机器码以生成，请妥善保管您的注册码。
+        </p>
+        <div class="input-container" id="inputContainer">
+            <input type="text" id="machineCode" placeholder=" " oninput="handleInput()">
+            <label for="machineCode" class="float-label">输入机器码</label>
+            <span class="checkmark" id="checkmark">✓</span>
+            <span class="error-mark" id="errorMark">✗</span>
+            <div class="validation-message" id="validationMessage"></div>
+        </div>
+        <div id="licenseKeyContainer" class="license-key-container">
+            <p class="license-key" id="licenseKey"></p>
+        </div>
+        <button id="generateButton" onclick="handleButtonClick()">生成注册码</button>
+        <p class="disclaimer">免责声明：此工具仅用于演示目的。请勿将生成的注册码用于非法用途。</p>
+    </div>
 
-	<script>
-		const secretKey = atob("RklUQU9JU3k=");
-					        const secretIv = atob("NTM2NzM4NjI=");
-					
-					        let isGenerating = false;
-					        let hasGeneratedKey = false;
-					        let lastGeneratedMachineCode = '';
-					
-					        function handleInput() {
-					            const machineCode = document.getElementById('machineCode').value.trim();
-					            const checkmark = document.getElementById('checkmark');
-					            const errorMark = document.getElementById('errorMark');
-					            const validationMessage = document.getElementById('validationMessage');
-					            const inputContainer = document.getElementById('inputContainer');
-					
-					            if (machineCode.length >= 10) {
-					                checkmark.style.display = 'inline';
-					                errorMark.style.display = 'none';
-					                validationMessage.textContent = '';
-					                inputContainer.classList.remove('invalid');
-					            } else {
-					                checkmark.style.display = 'none';
-					                errorMark.style.display = 'inline';
-					                validationMessage.textContent = `还需要输入${10 - machineCode.length}个字符`;
-					                inputContainer.classList.add('invalid');
-					            }
-					
-					            if (machineCode !== lastGeneratedMachineCode) {
-					                resetInterfaceWithAnimation();
-					            }
-					        }
-					
-					        function resetInterfaceWithAnimation() {
-					            if (hasGeneratedKey) {
-					                const licenseKeyContainer = document.getElementById('licenseKeyContainer');
-					                const licenseKey = document.getElementById('licenseKey');
-					                const generateButton = document.getElementById('generateButton');
-					
-					                licenseKey.classList.add('hide');
-					                generateButton.classList.add('reset');
-					
-					                setTimeout(() => {
-					                    licenseKeyContainer.classList.remove('show');
-					                    setTimeout(() => {
-					                        hasGeneratedKey = false;
-					                        generateButton.textContent = '生成注册码';
-					                        generateButton.classList.remove('copied');
-					                        generateButton.classList.remove('reset');
-					                        licenseKey.classList.remove('hide');
-					                    }, 300);
-					                }, 300);
-					            }
-					        }
-					
-					        function handleButtonClick() {
-					            if (!hasGeneratedKey) {
-					                generateLicenseKey();
-					            } else {
-					                copyLicenseKey();
-					            }
-					        }
-					
-					        async function generateLicenseKey() {
-					            const machineCode = document.getElementById('machineCode').value.trim();
-					            if (machineCode.length < 4) {
-					                const inputContainer = document.getElementById('inputContainer');
-					                inputContainer.classList.add('invalid');
-					                return;
-					            }
-					
-					            isGenerating = true;
-					            document.getElementById('generateButton').innerHTML = '<span class="loader"></span>';
-					            setTimeout(() => {
-					                const licenseKey = encryptData(machineCode);
-					                document.getElementById('licenseKey').textContent = licenseKey;
-					                document.getElementById('licenseKeyContainer').classList.add('show');
-					                document.getElementById('generateButton').textContent = '复制注册码';
-					                lastGeneratedMachineCode = machineCode;
-					                hasGeneratedKey = true;
-					                isGenerating = false;
-					            }, 400);
-					        }
-					
-					function copyLicenseKey() {
-					    const licenseKey = document.getElementById('licenseKey').textContent;
-					    navigator.clipboard.writeText(licenseKey).then(() => {
-					        const generateButton = document.getElementById('generateButton');
-					        generateButton.textContent = '复制成功';
-					        generateButton.classList.add('copied');
-					        
-					        // 2秒后重置界面
-					        setTimeout(resetInterfaceWithAnimation1, 1500);
-					    });
-					}
-					        function resetInterfaceWithAnimation1() {
-					            if (hasGeneratedKey) {
-					                const licenseKeyContainer = document.getElementById('licenseKeyContainer');
-					                const licenseKey = document.getElementById('licenseKey');
-					                const generateButton = document.getElementById('generateButton');
-					
-					                licenseKey.classList.add('hide');
-					                generateButton.classList.add('reset');
-					
-					                setTimeout(() => {
-					                    licenseKeyContainer.classList.remove('show');
-					                    setTimeout(() => {
-					                        hasGeneratedKey = false;
-					                        generateButton.textContent = '生成注册码';
-					                        generateButton.classList.remove('copied');
-					                        generateButton.classList.remove('reset');
-					                        licenseKey.classList.remove('hide');
-					                    }, 300);
-					                
-					                                               document.getElementById('machineCode').value = '';
-					    document.getElementById('checkmark').style.display = 'none';
-					    document.getElementById('errorMark').style.display = 'none';}, 300);
-					            }
-					        }
-					        
-					        function encryptData(data) {
-					            const keyHex = CryptoJS.enc.Utf8.parse(secretKey);
-					            const ivHex = CryptoJS.enc.Utf8.parse(secretIv);
-					            const encrypted = CryptoJS.DES.encrypt(CryptoJS.enc.Utf8.parse(data), keyHex, {
-					                iv: ivHex,
-					                mode: CryptoJS.mode.CBC,
-					                padding: CryptoJS.pad.Pkcs7
-					            });
-					            return encrypted.ciphertext.toString(CryptoJS.enc.Hex).toUpperCase();
-					        }
-	</script>
+    <div class="footer">
+        <span class="signature">© 2023 License Key Generator</span>
+    </div>
+
+    <script>
+        const secretKey = atob("RklUQU9JU3k=");
+        const secretIv = atob("NTM2NzM4NjI=");
+
+        let isGenerating = false;
+        let hasGeneratedKey = false;
+        let lastGeneratedMachineCode = '';
+
+        function handleInput() {
+            const machineCode = document.getElementById('machineCode').value.trim();
+            const checkmark = document.getElementById('checkmark');
+            const errorMark = document.getElementById('errorMark');
+            const validationMessage = document.getElementById('validationMessage');
+            const inputContainer = document.getElementById('inputContainer');
+
+            if (machineCode.length >= 10) {
+                checkmark.style.display = 'inline';
+                errorMark.style.display = 'none';
+                validationMessage.textContent = '';
+                inputContainer.classList.remove('invalid');
+            } else {
+                checkmark.style.display = 'none';
+                errorMark.style.display = 'inline';
+                validationMessage.textContent = `还需要输入${10 - machineCode.length}个字符`;
+                inputContainer.classList.add('invalid');
+            }
+
+            if (machineCode !== lastGeneratedMachineCode) {
+                resetInterfaceWithAnimation();
+            }
+        }
+
+        function resetInterfaceWithAnimation() {
+            if (hasGeneratedKey) {
+                const licenseKeyContainer = document.getElementById('licenseKeyContainer');
+                const licenseKey = document.getElementById('licenseKey');
+                const generateButton = document.getElementById('generateButton');
+
+                licenseKey.classList.add('hide');
+                generateButton.classList.add('reset');
+
+                setTimeout(() => {
+                    licenseKeyContainer.classList.remove('show');
+                    setTimeout(() => {
+                        hasGeneratedKey = false;
+                        generateButton.textContent = '生成注册码';
+                        generateButton.classList.remove('copied');
+                        generateButton.classList.remove('reset');
+                        licenseKey.classList.remove('hide');
+                    }, 300);
+                }, 300);
+            }
+        }
+
+        function handleButtonClick() {
+            if (!hasGeneratedKey) {
+                generateLicenseKey();
+            } else {
+                copyLicenseKey();
+            }
+        }
+
+        async function generateLicenseKey() {
+            const machineCode = document.getElementById('machineCode').value.trim();
+            if (machineCode.length < 4) {
+                const inputContainer = document.getElementById('inputContainer');
+                inputContainer.classList.add('invalid');
+                return;
+            }
+
+            isGenerating = true;
+            document.getElementById('generateButton').innerHTML = '<span class="loader"></span>';
+            setTimeout(() => {
+                const licenseKey = encryptData(machineCode);
+                document.getElementById('licenseKey').textContent = licenseKey;
+                document.getElementById('licenseKeyContainer').classList.add('show');
+                document.getElementById('generateButton').textContent = '复制注册码';
+                lastGeneratedMachineCode = machineCode;
+                hasGeneratedKey = true;
+                isGenerating = false;
+            }, 400);
+        }
+
+        function copyLicenseKey() {
+            const licenseKey = document.getElementById('licenseKey').textContent;
+            navigator.clipboard.writeText(licenseKey).then(() => {
+                const generateButton = document.getElementById('generateButton');
+                generateButton.textContent = '复制成功';
+                generateButton.classList.add('copied');
+                
+                // 2秒后重置界面
+                setTimeout(resetInterfaceWithAnimation1, 1500);
+            });
+        }
+
+        function resetInterfaceWithAnimation1() {
+            if (hasGeneratedKey) {
+                const licenseKeyContainer = document.getElementById('licenseKeyContainer');
+                const licenseKey = document.getElementById('licenseKey');
+                const generateButton = document.getElementById('generateButton');
+
+                licenseKey.classList.add('hide');
+                generateButton.classList.add('reset');
+
+                setTimeout(() => {
+                    licenseKeyContainer.classList.remove('show');
+                    setTimeout(() => {
+                        hasGeneratedKey = false;
+                        generateButton.textContent = '生成注册码';
+                        generateButton.classList.remove('copied');
+                        generateButton.classList.remove('reset');
+                        licenseKey.classList.remove('hide');
+                    }, 300);
+                
+                    document.getElementById('machineCode').value = '';
+                    document.getElementById('checkmark').style.display = 'none';
+                    document.getElementById('errorMark').style.display = 'none';
+                }, 300);
+            }
+        }
+        
+        function encryptData(data) {
+            const keyHex = CryptoJS.enc.Utf8.parse(secretKey);
+            const ivHex = CryptoJS.enc.Utf8.parse(secretIv);
+            const encrypted = CryptoJS.DES.encrypt(CryptoJS.enc.Utf8.parse(data), keyHex, {
+                iv: ivHex,
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.Pkcs7
+            });
+            return encrypted.ciphertext.toString(CryptoJS.enc.Hex).toUpperCase();
+        }
+    </script>
 </body>
 </html>

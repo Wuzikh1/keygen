@@ -225,6 +225,14 @@
             100% { transform: rotate(360deg); }
         }
     </style>
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => console.log('ServiceWorker 注册成功'))
+                .catch(error => console.log('ServiceWorker 注册失败:', error));
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -259,10 +267,62 @@
         const licenseKeyElement = document.getElementById('licenseKey');
         const generateButton = document.getElementById('generateButton');
 
+        const translations = {
+            'zh-CN': {
+                title: 'License Key Generator',
+                inputLabel: '输入机器码',
+                generateButton: '生成注册码',
+                copyButton: '复制注册码',
+                copiedMessage: '复制成功',
+                validationError: '还需要输入{0}个字符',
+                formatError: '机器码只能包含字母和数字'
+            },
+            'en-US': {
+                title: 'License Key Generator',
+                inputLabel: 'Enter Machine Code',
+                generateButton: 'Generate License Key',
+                copyButton: 'Copy License Key',
+                copiedMessage: 'Copied',
+                validationError: 'Need {0} more characters',
+                formatError: 'Machine code can only contain letters and numbers'
+            }
+        };
+
+        const lang = navigator.language || 'zh-CN';
+        const t = translations[lang] || translations['zh-CN'];
+
+        document.querySelector('h2').textContent = t.title;
+        document.querySelector('.float-label').textContent = t.inputLabel;
+        generateButton.textContent = t.generateButton;
+
+        function debounce(func, delay) {
+            let inDebounce;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(inDebounce);
+                inDebounce = setTimeout(() => func.apply(context, args), delay);
+            }
+        }
+
         function handleInput() {
             const machineCode = machineCodeInput.value.trim();
-            
-            if (machineCode.length >= 10) {
+            updateCharacterCount(machineCode);
+            debouncedValidation(machineCode);
+        }
+
+        function updateCharacterCount(machineCode) {
+            if (machineCode.length < 10) {
+                validationMessage.textContent = t.validationError.replace('{0}', 10 - machineCode.length);
+                checkmark.style.display = 'none';
+                errorMark.style.display = 'inline';
+            } else {
+                validationMessage.textContent = '';
+            }
+        }
+
+        const debouncedValidation = debounce((machineCode) => {
+            if (machineCode.length >= 10 && /^[a-zA-Z0-9]+$/.test(machineCode)) {
                 checkmark.style.display = 'inline';
                 errorMark.style.display = 'none';
                 validationMessage.textContent = '';
@@ -270,14 +330,16 @@
             } else {
                 checkmark.style.display = 'none';
                 errorMark.style.display = 'inline';
-                validationMessage.textContent = `还需要输入${10 - machineCode.length}个字符`;
+                if (machineCode.length >= 10) {
+                    validationMessage.textContent = t.formatError;
+                }
                 inputContainer.classList.add('invalid');
             }
             
             if (machineCode !== lastGeneratedMachineCode) {
                 resetInterfaceWithAnimation();
             }
-        }
+        }, 300);
 
         function resetInterfaceWithAnimation() {
             if (hasGeneratedKey) {
@@ -288,7 +350,7 @@
                     licenseKeyContainer.classList.remove('show');
                     setTimeout(() => {
                         hasGeneratedKey = false;
-                        generateButton.textContent = '生成注册码';
+                        generateButton.textContent = t.generateButton;
                         generateButton.classList.remove('copied', 'reset');
                         licenseKeyElement.classList.remove('hide');
                     }, 300);
@@ -306,7 +368,7 @@
 
         function generateLicenseKey() {
             const machineCode = machineCodeInput.value.trim();
-            if (machineCode.length < 4) {
+            if (machineCode.length < 10) {
                 inputContainer.classList.add('invalid');
                 return;
             }
@@ -317,7 +379,7 @@
                 const licenseKey = encryptData(machineCode);
                 licenseKeyElement.textContent = licenseKey;
                 licenseKeyContainer.classList.add('show');
-                generateButton.textContent = '复制注册码';
+                generateButton.textContent = t.copyButton;
                 lastGeneratedMachineCode = machineCode;
                 hasGeneratedKey = true;
                 isGenerating = false;
@@ -326,21 +388,37 @@
 
         function copyLicenseKey() {
             navigator.clipboard.writeText(licenseKeyElement.textContent).then(() => {
-                generateButton.textContent = '复制成功';
+                generateButton.textContent = t.copiedMessage;
                 generateButton.classList.add('copied');
-                setTimeout(resetInterfaceWithAnimation, 1500);
+                setTimeout(() => {
+                    resetInterfaceWithAnimation();
+                    clearInput();
+                }, 1500);
             });
         }
 
+        function clearInput() {
+            machineCodeInput.value = '';
+            checkmark.style.display = 'none';
+            errorMark.style.display = 'none';
+            validationMessage.textContent = '';
+            inputContainer.classList.remove('invalid');
+        }
+
         function encryptData(data) {
-            const keyHex = CryptoJS.enc.Utf8.parse(secretKey);
-            const ivHex = CryptoJS.enc.Utf8.parse(secretIv);
-            const encrypted = CryptoJS.DES.encrypt(CryptoJS.enc.Utf8.parse(data), keyHex, {
-                iv: ivHex,
-                mode: CryptoJS.mode.CBC,
-                padding: CryptoJS.pad.Pkcs7
-            });
-            return encrypted.ciphertext.toString(CryptoJS.enc.Hex).toUpperCase();
+            try {
+                const keyHex = CryptoJS.enc.Utf8.parse(secretKey);
+                const ivHex = CryptoJS.enc.Utf8.parse(secretIv);
+                const encrypted = CryptoJS.DES.encrypt(CryptoJS.enc.Utf8.parse(data), keyHex, {
+                    iv: ivHex,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+                return encrypted.ciphertext.toString(CryptoJS.enc.Hex).toUpperCase();
+            } catch (error) {
+                console.error('加密过程中出错:', error);
+                return '加密失败';
+            }
         }
 
         machineCodeInput.addEventListener('input', handleInput);
